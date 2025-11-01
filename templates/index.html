@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Kanban Board</h1>
+<form method="POST" action="{{ url_for('add_list') }}" class="mb-4">
+  {{ list_form.hidden_tag() }}
+  <div class="input-group">
+    {{ list_form.name(class="form-control", placeholder="New list name") }}
+    <button type="submit" class="btn btn-primary">{{ list_form.submit.label.text }}</button>
+  </div>
+</form>
+<div class="board">
+    {% for list in lists %}
+    <div class="list" style="background-color: {{ list.color }};" id="list-{{ list.id }}">
+        <h2>{{ list.name }}</h2>
+
+        <!-- ✅ Draggable zone only -->
+        <div class="card-zone">
+            <div class="card-container" id="cards-{{ list.id }}">
+                {% for card in list.cards %}
+                <div class="card" data-card-id="{{ card.id }}">
+                    <h3>{{ card.title }}</h3>
+                    <p>{{ card.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ✅ Form stays outside the draggable zone -->
+        <form class="add-card-form" data-list-id="{{ list.id }}">
+            {{ form.hidden_tag() }}
+            <div>{{ form.title(size=30) }}</div>
+            <div>{{ form.description(rows=2, cols=30) }}</div>
+            <div><button type="submit">Add Card</button></div>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
