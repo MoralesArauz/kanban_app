@@ -28,8 +28,8 @@ Coming soon — feel free to add screenshots of your board in action!
 1. Clone the repo:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   cd YOUR_REPO_NAME
+   https://github.com/MoralesArauz/kanban_app.git
+   cd KANBAN_APP
    ```
 
 2. Create a virtual environment:
