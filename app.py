@@ -31,12 +31,16 @@ def get_color_from_name(name):
 @login_required
 def index():
     lists = List.query.filter_by(user_id=current_user.id).all()
+
+    # Add color to each list dynamically
     for l in lists:
         l.color = get_color_from_name(l.name)
-    list_form = ListForm()
-    card_form = CardForm()
-    return render_template('index.html', lists=lists, list_form=list_form, form=card_form)
 
+    list_form = ListForm()      # for creating new lists
+    card_form = CardForm()      # for adding cards
+    edit_form = ListForm()      # reused for renaming lists
+
+    return render_template('index.html', lists=lists, list_form=list_form, form=card_form, edit_form=edit_form)
 
 @app.route('/move_card/<int:card_id>', methods=['POST'])
 def move_card(card_id):
@@ -47,6 +51,52 @@ def move_card(card_id):
         card.list_id = int(new_list_id)
         db.session.commit()
     return '', 204
+
+@app.route('/delete_card/<int:card_id>', methods=['POST'])
+@login_required
+def delete_card(card_id):
+    card = Card.query.get_or_404(card_id)
+
+    # Find the user's deleted_task list
+    deleted_list = List.query.filter_by(name="deleted_task", user_id=current_user.id).first()
+    if not deleted_list:
+        flash("Deleted list not found.", "danger")
+        return redirect(url_for('index'))
+
+    # Move the card instead of deleting
+    card.list_id = deleted_list.id
+    db.session.commit()
+    flash("Card moved to deleted tasks.", "info")
+    return redirect(url_for('index'))
+
+@app.route('/deleted')
+@login_required
+def deleted():
+    deleted_list = List.query.filter_by(name='deleted_task', user_id=current_user.id).first()
+    if not deleted_list:
+        flash("No deleted task list found.", "warning")
+        return redirect(url_for('index'))
+
+    cards = Card.query.filter_by(list_id=deleted_list.id, user_id=current_user.id).all()
+    return render_template('deleted.html', cards=cards)
+
+
+@app.route('/restore_card/<int:card_id>', methods=['POST'])
+@login_required
+def restore_card(card_id):
+    card = Card.query.get_or_404(card_id)
+
+    # Restore to default list (e.g., "To Do")
+    default_list = List.query.filter_by(name='To Do', user_id=current_user.id).first()
+    if default_list:
+        card.list_id = default_list.id
+        db.session.commit()
+        flash("Card restored to To Do list.", "success")
+    else:
+        flash("Default list not found.", "danger")
+
+    return redirect(url_for('deleted'))
+
 
 @app.route('/create_list', methods=['POST'])
 @login_required
@@ -65,6 +115,19 @@ def add_card(list_id):
         new_card = Card(title=form.title.data, description=form.description.data, list_id=list_id,user_id=current_user.id)
         db.session.add(new_card)
         db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/edit_list/<int:list_id>', methods=['POST'])
+@login_required
+def edit_list_name(list_id):
+    list_to_edit = List.query.filter_by(id=list_id, user_id=current_user.id).first_or_404()
+    new_name = request.form.get('name')
+    if new_name:
+        list_to_edit.name = new_name
+        db.session.commit()
+        flash('List renamed successfully!', 'success')
+    else:
+        flash('List name cannot be empty.', 'danger')
     return redirect(url_for('index'))
 
 

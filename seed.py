@@ -12,11 +12,15 @@ with app.app_context():
     db.session.add(user)
     db.session.commit()
 
-    # Create lists
+    # Create visible lists
     todo = List(name='To Do', user_id=user.id)
     doing = List(name='Doing', user_id=user.id)
     done = List(name='Done', user_id=user.id)
-    db.session.add_all([todo, doing, done])
+
+    # Create hidden deleted list
+    deleted = List(name='deleted_task', user_id=user.id)
+
+    db.session.add_all([todo, doing, done, deleted])
     db.session.commit()
 
     # Create cards

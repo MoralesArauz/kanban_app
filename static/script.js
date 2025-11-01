@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // ✅ Drag-and-drop setup
   document.querySelectorAll('.card-container').forEach(container => {
     new Sortable(container, {
       group: 'cards',
@@ -8,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newListId = evt.to.id.replace('cards-', '');
         console.log(`Moved card: ${cardId} to list: ${newListId}`);
 
-        // ✅ Remove drag-over class from all containers
         document.querySelectorAll('.card-container').forEach(c => {
           c.classList.remove('drag-over');
         });
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ✅ Add card via AJAX
   document.querySelectorAll('.add-card-form').forEach(form => {
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -48,6 +49,32 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Error adding card');
         }
       });
+    });
+  });
+
+  // ✅ Inline list name editing
+  document.querySelectorAll('.list-header').forEach(header => {
+    const title = header.querySelector('.list-name');
+    const icon = header.querySelector('.edit-icon');
+    const form = header.querySelector('.edit-list-form');
+    const input = form.querySelector('input');
+
+    icon.addEventListener('click', () => {
+      title.style.display = 'none';
+      icon.style.display = 'none';
+      form.classList.remove('d-none');
+      input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        form.submit();
+      } else if (e.key === 'Escape') {
+        form.classList.add('d-none');
+        title.style.display = '';
+        icon.style.display = '';
+      }
     });
   });
 });

@@ -10,8 +10,22 @@
 </form>
 <div class="board">
     {% for list in lists %}
+    {% if list.name != 'deleted_task' %}
+    <!-- Render list -->
     <div class="list" style="background-color: {{ list.color }};" id="list-{{ list.id }}">
-        <h2>{{ list.name }}</h2>
+        <div class="list-header" data-list-id="{{ list.id }}">
+        <div class="list-title d-flex justify-content-between align-items-center">
+            <span class="list-name">{{ list.name }}</span>
+            <button class="edit-icon btn btn-sm btn-link p-0" title="Rename list">
+            ✏️
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('edit_list_name', list_id=list.id) }}" class="edit-list-form d-none mt-2">
+            {{ edit_form.hidden_tag() }}
+            <input type="text" name="name" class="form-control form-control-sm" value="{{ list.name }}" required>
+        </form>
+        </div>
 
         <!-- ✅ Draggable zone only -->
         <div class="card-zone">
@@ -20,6 +34,9 @@
                 <div class="card" data-card-id="{{ card.id }}">
                     <h3>{{ card.title }}</h3>
                     <p>{{ card.description }}</p>
+                    <form method="POST" action="{{ url_for('delete_card', card_id=card.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete card" onclick="return confirm('Move this card to deleted tasks?');">🗑️</button>
+                    </form>
                 </div>
                 {% endfor %}
             </div>
@@ -33,6 +50,7 @@
             <div><button type="submit">Add Card</button></div>
         </form>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 {% endblock %}
